@@ -19,19 +19,19 @@ const Header = () => {
         <ul className="flex gap-4">
           <Link
             to="/"
-            className="hidden sm:inline text-slate-700 hover:underline active:text-lg active:text-green-500"
+            className="hidden sm:inline text-slate-700 hover:border hover:p-1 hover:border-pink-700 hover:border-spacing-1 focus:underline-offset-0 focus:text-lg focus:text-green-500"
           >
             Home
           </Link>
           <Link
             to="/about"
-            className="hidden sm:inline text-slate-700 hover:underline active:text-lg active:text-green-500"
+            className="hidden sm:inline text-slate-700 hover:border hover:p-1 hover:border-pink-700 hover:border-spacing-1 focus:underline-offset-0 focus:text-lg focus:text-green-500"
           >
             About
           </Link>
           <Link
             to="/login"
-            className=" text-slate-700 hover:underline active:text-lg active:text-green-500"
+            className=" text-slate-700 hover:border hover:p-1 hover:border-pink-700  hover:border-spacing-1 focus:text-lg focus:text-green-500 focus:underline-offset-8"
           >
             Sign in
           </Link>
