@@ -28,3 +28,26 @@ export const signin = async (req, res, next) => {
     next(error);
   }
 };
+
+
+export const googleAuth = async (req, res, next) => {
+
+try {
+const user=await User.findOne({email: req.body.email});
+if(user){
+const token = jwt.sign({ id: user._id }, process.env.JWT_KEY);
+const { password: pass, ...user } = user._doc;
+res.cookie("token", token, { httpOnly: true }).status(200).json(user);
+}else{
+const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+const hashPassword = await bcrypt.hashSync(generatedPassword, 10);
+const newUser = new User({ username: req.body.name.split(" ").join("").toLocaleLowerCase() + Math.random().toString(36).slice(-4), email: req.body.email, password: hashPassword, avatar: req.body.photo});
+await newUser.save();
+const token = jwt.sign({ id: newUser._id }, process.env.JWT_KEY);
+const { password: pass, ...user } = newUser._doc;
+res.cookie("token", token, { httpOnly: true }).status(201).json(user);
+}
+} catch (error) {
+next(error);
+}
+};

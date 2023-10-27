@@ -2,6 +2,7 @@ import {useState} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {Link, useNavigate} from 'react-router-dom';
 import{ signInStart, signInSuccess, signInFailure } from '../redux/user/userSlice.js'
+import OAuth from '../components/Oauth.jsx';
 
 
 const Login = () => {
@@ -63,6 +64,7 @@ const Login = () => {
         >
           {loading ? 'Loading...' : 'Sign in'}
         </button>
+        <OAuth title="Sign in with Google"/>
       </form>
       <div className="flex gap-2 p-1 mt-5">
         <p>Dont have an account?</p>
