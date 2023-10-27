@@ -1,5 +1,8 @@
 import {useRef, useState, useEffect} from 'react';
-import {useSelector} from 'react-redux';
+import {useSelector, useDispatch} from 'react-redux';
+import {
+  updateUserStart, updateUserSuccess, updateUserFailure
+} from '../redux/user/userSlice';
 import {
   getDownloadURL,
   getStorage,
@@ -9,12 +12,14 @@ import {
 import {app} from '../firebase';
 
 const Profile = () => {
-  const {currentUser} = useSelector (state => state.user);
+  const {currentUser, loading, error} = useSelector (state => state.user);
   const [file, setFile] = useState (null);
   const [filePercent, setFilePercent] = useState (0);
   const [formData, setFormData] = useState ({});
   const [fileUpLoadError, setFileUpLoadError] = useState (false);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
   const fileRef = useRef (null);
+  const dispatch = useDispatch ();
 
   useEffect (
     () => {
@@ -26,33 +31,61 @@ const Profile = () => {
     [file]
   );
 
-  const handleFileUpload = (file) => {
-    const storage = getStorage(app);
-    const fileName = new Date().getTime() + file.name;
-    const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+  const handleFileUpload = file => {
+    const storage = getStorage (app);
+    const fileName = new Date ().getTime () + file.name;
+    const storageRef = ref (storage, fileName);
+    const uploadTask = uploadBytesResumable (storageRef, file);
 
-    uploadTask.on(
+    uploadTask.on (
       'state_changed',
-      (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setFilePercent(Math.round(progress));
+      snapshot => {
+        const progress = snapshot.bytesTransferred / snapshot.totalBytes * 100;
+        setFilePercent (Math.round (progress));
       },
       () => {
-        setFileUpLoadError(true);
+        setFileUpLoadError (true);
       },
       () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) =>
-          setFormData({ ...formData, avatar: downloadURL })
+        getDownloadURL (uploadTask.snapshot.ref).then (downloadURL =>
+          setFormData ({...formData, avatar: downloadURL})
         );
       }
     );
   };
+
+
+  const handleChange = e => {
+    setFormData ({...formData, [e.target.id]: e.target.value});
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(updateUserStart());
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(updateUserFailure(data.message));
+        return;
+      }
+
+      dispatch(updateUserSuccess(data));
+      setUpdateSuccess(true);
+    } catch (error) {
+      dispatch(updateUserFailure(error.message));
+    }
+  };
   return (
     <div className="p-2 max-w-lg mx-auto mt-24">
       <h1 className="text-3xl font-semibold text-center">Profile</h1>
-      <form className="flex flex-col gap-4">
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <input
           onChange={e => setFile (e.target.files[0])}
           type="file"
@@ -66,39 +99,48 @@ const Profile = () => {
           alt="profile"
           className="rounded-full w-24 h-24 object-cover mt-2 cursor-pointer self-center"
         />
-        <p className='text-sm self-center'>
+        <p className="text-sm self-center">
           {fileUpLoadError
-            ? <span className="text-red-700">Error uploading image(image must be less than 5mb)</span>
+            ? <span className="text-red-700">
+                Error uploading image(image must be less than 5mb)
+              </span>
             : filePercent > 0 && filePercent < 100
                 ? <span className="text-slate-700">
                     {`Uploading ${filePercent}%`}{' '}
                   </span>
                 : filePercent === 100
-                    ? <span className="text-green-700">Image successfully uploaded!!!</span>
+                    ? <span className="text-green-700">
+                        Image successfully uploaded!!!
+                      </span>
                     : ''}
 
         </p>
         <input
           type="text"
           placeholder="username"
+          defaultValue={currentUser.username}
+          onChange={handleChange}
           id="username"
           className="p-3  rounded-md border focus:outline-blue-500"
         />
         <input
           type="email"
           placeholder="email"
+          defaultValue={currentUser.email}
+          onChange={handleChange}
           id="email"
           className="p-3  rounded-md border focus:outline-blue-500"
         />
         <input
           type="password"
           placeholder="password"
+          onChange={handleChange}
           id="password"
           className="p-3  rounded-md border focus:outline-blue-500"
         />
-        <button className="bg-slate-700
-         text-white rounded-md p-3 uppercase disabled:opacity-90 hover:opacity-95">
-          Update
+        <button disabled={loading} className="bg-slate-700
+         text-white rounded-md p-3 uppercase  disabled:opacity-90 hover:opacity-95">
+         { loading? "Loading..." : "Update"}
         </button>
       </form>
       <div className="flex justify-between mt-5">
@@ -109,6 +151,8 @@ const Profile = () => {
           Sign Out
         </span>
       </div>
+         <p className='text-red-700 mt-5'>{error? error : ""}</p>
+         <p className='text-green-700 mt-5'>{updateSuccess ? 'Updated user successfully' : ""}</p>
     </div>
   );
 };
