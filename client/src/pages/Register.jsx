@@ -45,21 +45,21 @@ const Register = () => {
       <form className="flex flex-col gap-4 " onSubmit={handleSubmit}>
         <input
           type="text"
-          className="border p-3 rounded-md"
+          className="border p-3 rounded-md focus:outline-blue-500"
           placeholder="Username"
           onChange={handleChange}
           id="username"
         />
         <input
           type="email"
-          className="border p-3 rounded-md"
+          className="border p-3 rounded-md focus:outline-blue-500"
           placeholder="Email"
           onChange={handleChange}
           id="email"
         />
         <input
           type="password"
-          className="border p-3 rounded-md"
+          className="border p-3 rounded-md focus:outline-blue-500"
           placeholder="Password"
           onChange={handleChange}
           id="password"
