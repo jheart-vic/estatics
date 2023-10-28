@@ -3,68 +3,70 @@ import {
   getStorage,
   ref,
   uploadBytesResumable,
-} from 'firebase/storage';
-import {useEffect, useState} from 'react';
-import {app} from '../firebase';
-import {AiFillCloseCircle} from 'react-icons/ai';
-import { set } from 'mongoose';
+} from "firebase/storage";
+import { useEffect, useState } from "react";
+import { app } from "../firebase";
+import { AiFillCloseCircle } from "react-icons/ai";
 
 const CreateLisitng = () => {
-  const [files, setFile] = useState ({});
-  const [imageUplodError, setImageUploadError] = useState (false);
-  const [successMessage, setSuccessMessage] = useState ('');
-  const [loading, setLoading] = useState (false);
-  const [formData, setFormData] = useState ({
+  const [files, setFile] = useState({});
+  const [imageUplodError, setImageUploadError] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
     imageUrls: [],
   });
-  console.log (formData);
+  console.log(formData);
+  const resetFileInput = () => {
+    document.getElementById("images").value = "";
+  };
   const handleImageUpload = () => {
     if (files && files.length < 7 && formData.imageUrls.length < 7) {
-
-        setLoading (true);
-      //  setImageUploadError (false);
+      setLoading(true);
       const promises = [];
       for (let i = 0; i < files.length; i++) {
-        promises.push (uploadImage (files[i]));
+        promises.push(uploadImage(files[i]));
       }
-      Promise.all (promises)
-        .then (urls => {
-          setFormData ({
+      Promise.all(promises)
+        .then((urls) => {
+          setFormData({
             ...formData,
-            imageUrls: formData.imageUrls.concat (urls),
+            imageUrls: formData.imageUrls.concat(urls),
           });
-          setImageUploadError (false);
-          setSuccessMessage ('Image(s) uploaded successfully');
-          setLoading (false);
+          setImageUploadError(false);
+          setSuccessMessage("Image(s) uploaded successfully");
+          setLoading(false);
+          resetFileInput();
         })
-        .catch (error => {
-          setImageUploadError ('Image upload failed 5mb max');
-          setLoading (false);
+        // eslint-disable-next-line no-unused-vars
+        .catch((error) => {
+          setImageUploadError("Image upload failed 5mb max");
+          setLoading(false);
         });
     } else {
-      setImageUploadError ('You can only upload 6 images at a time');
-       setLoading (false);
+      setImageUploadError("You can only upload 6 images at a time");
+      setLoading(false);
     }
   };
-  const uploadImage = async file => {
-    return new Promise ((resolve, reject) => {
-      const storage = getStorage (app);
-      const fileName = new Date ().getTime () + file.name;
-      const storageRef = ref (storage, fileName);
-      const uploadTask = uploadBytesResumable (storageRef, file);
-      uploadTask.on (
-        'state_changed',
-        snapshot => {
+  const uploadImage = async (file) => {
+    return new Promise((resolve, reject) => {
+      const storage = getStorage(app);
+      const fileName = new Date().getTime() + file.name;
+      const storageRef = ref(storage, fileName);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
           const progress =
-            snapshot.bytesTransferred / snapshot.totalBytes * 100;
-          console.log (progress);
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log(progress);
         },
-        error => {
-          reject (error);
+        (error) => {
+          reject(error);
         },
         () => {
-          getDownloadURL (uploadTask.snapshot.ref).then (downloadURL => {
-            resolve (downloadURL);
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            resolve(downloadURL);
           });
         }
       );
@@ -72,26 +74,23 @@ const CreateLisitng = () => {
   };
 
   const clearError = () => {
-    setImageUploadError (false);
-    setSuccessMessage ('');
+    setImageUploadError(false);
+    setSuccessMessage("");
   };
 
-  useEffect (
-    () => {
-      if (imageUplodError || successMessage) {
-        const timer = setTimeout (clearError, 2000);
-        return () => {
-          clearTimeout (timer);
-        };
-      }
-    },
-    [imageUplodError, successMessage]
-  );
+  useEffect(() => {
+    if (imageUplodError || successMessage) {
+      const timer = setTimeout(clearError, 2000);
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [imageUplodError, successMessage]);
 
-  const handleRemoveImage = index => () => {
-    setFormData ({
+  const handleRemoveImage = (index) => () => {
+    setFormData({
       ...formData,
-      imageUrls: formData.imageUrls.filter ((_, i) => i !== index),
+      imageUrls: formData.imageUrls.filter((_, i) => i !== index),
     });
   };
 
@@ -201,7 +200,6 @@ const CreateLisitng = () => {
                 <span>Discounted Price</span>
                 <span>($ / month)</span>
               </div>
-
             </div>
           </div>
         </div>
@@ -213,7 +211,7 @@ const CreateLisitng = () => {
           <div className="flex gap-4">
             <input
               type="file"
-              onChange={e => setFile (e.target.files)}
+              onChange={(e) => setFile(e.target.files)}
               className="border border-gray-300 rounded-md w-full p-3"
               id="images"
               accept="image/*"
@@ -223,19 +221,20 @@ const CreateLisitng = () => {
               type="button"
               disabled={loading}
               onClick={handleImageUpload}
-              className="text-green-700  p-3 text-center border border-green-700 rounded uppercase hover:shadow-lg disabled:opacity-80"
+              className="text-green-700  p-3 text-center cursor-pointer border border-green-700 rounded uppercase hover:shadow-lg disabled:opacity-80"
             >
-              {loading ? 'Uploading...' : 'Upload'}
+              {loading ? "Uploading..." : "Upload"}
             </button>
           </div>
           <p className="text-red-700">
-            {imageUplodError ? imageUplodError : ''}
+            {imageUplodError ? imageUplodError : ""}
           </p>
           <p className="text-green-700">
-            {' '}{successMessage ? successMessage : ''}
+            {" "}
+            {successMessage ? successMessage : ""}
           </p>
           {formData.imageUrls.length > 0 &&
-            formData.imageUrls.map ((url, index) => (
+            formData.imageUrls.map((url, index) => (
               <div
                 className="flex justify-between p-3 border items-center"
                 key={index}
@@ -247,7 +246,7 @@ const CreateLisitng = () => {
                 />
                 <button
                   type="button"
-                  onClick={handleRemoveImage (index)}
+                  onClick={handleRemoveImage(index)}
                   className="text-red-700 w-5 h-5"
                 >
                   <AiFillCloseCircle />
