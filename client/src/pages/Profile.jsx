@@ -12,6 +12,7 @@ import {
   uploadBytesResumable,
 } from 'firebase/storage';
 import {app} from '../firebase';
+import { Link } from 'react-router-dom';
 
 const Profile = () => {
   const {currentUser, loading, error} = useSelector (state => state.user);
@@ -178,6 +179,9 @@ const Profile = () => {
          text-white rounded-md p-3 uppercase  disabled:opacity-90 hover:opacity-95">
          { loading? "Loading..." : "Update"}
         </button>
+        <Link to={"/create-listing"} className=" bg-green-700 text-white rounded-md p-3 uppercase text-center hover:opacity-95" >
+           Create Listing
+        </Link>
       </form>
       <div className="flex justify-between mt-5">
         <span onClick={handleDeleteUser}  className="text-red-700 cursor-pointer hover:bg-red-900 hover:text-white hover:p-1 hover:rounded-md">
